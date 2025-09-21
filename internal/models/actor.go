@@ -12,5 +12,5 @@ type Actor struct {
 
 	// Зв'язки
 	Roles      []Role       // One-to-Many: Один актор може мати багато ролей
-	Rehearsals []*Rehearsal `gorm:"many2many:rehearsal_actors;"` // Many-to-Many
+	Rehearsals []*Rehearsal `gorm:"many2many:rehearsal_actors;constraint:OnDelete:CASCADE;"` // Many-to-Many
 }

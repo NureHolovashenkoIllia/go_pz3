@@ -11,5 +11,5 @@ type Rehearsal struct {
 	PerformanceID uint
 
 	// Зв'язки
-	Actors []*Actor `gorm:"many2many:rehearsal_actors;"` // Many-to-Many
+	Actors []*Actor `gorm:"many2many:rehearsal_actors;constraint:OnDelete:CASCADE;"` // Many-to-Many
 }

@@ -84,22 +84,42 @@ func (h *RehearsalHandler) GetRehearsal(c *gin.Context) {
 	c.JSON(http.StatusOK, rehearsal)
 }
 
-// UpdateRehearsal оновлює дані репетиції
+// UpdateRehearsal оновлює дані репетиції та список її учасників
 func (h *RehearsalHandler) UpdateRehearsal(c *gin.Context) {
-	var rehearsal models.Rehearsal
 	id := c.Param("id")
 
-	if result := h.DB.First(&rehearsal, id); result.Error != nil {
+	var rehearsal models.Rehearsal
+	if err := h.DB.First(&rehearsal, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Rehearsal not found"})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&rehearsal); err != nil {
+	var input CreateRehearsalInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	h.DB.Save(&rehearsal)
+	rehearsal.PerformanceID = input.PerformanceID
+	rehearsal.DateTime = parseTime(input.DateTime)
+
+	if err := h.DB.Save(&rehearsal).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update rehearsal"})
+		return
+	}
+
+	var newActors []*models.Actor
+	if err := h.DB.Find(&newActors, input.ActorIDs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find actors for update"})
+		return
+	}
+
+	if err := h.DB.Model(&rehearsal).Association("Actors").Replace(newActors); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update actor associations"})
+		return
+	}
+
+	h.DB.Preload("Actors").First(&rehearsal, rehearsal.ID)
 	c.JSON(http.StatusOK, rehearsal)
 }
 

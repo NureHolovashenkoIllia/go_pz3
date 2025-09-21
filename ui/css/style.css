@@ -1,0 +1,16 @@
+/* Приховуємо всі секції контенту за замовчуванням */
+.content-section {
+    display: none;
+}
+
+/* Показуємо лише активну секцію */
+.content-section.active {
+    display: block;
+}
+
+/* Стилі для карток аналітики */
+.card-body .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
